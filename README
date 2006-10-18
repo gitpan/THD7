@@ -5,12 +5,18 @@ NAME
 SYNOPSIS
         use THD7 qw(:constants :functions);
 
-        $Radio = new THD7 ("/dev/ttyS0");
+        my $Radio = new THD7 ("/dev/ttyS0");
         $Radio->Band(BAND_A);
         $Radio->DataBand(BAND_A);
         $Radio->TNC(ON);
         $Radio->APRS_TransmitInterval(1);
         $Radio->APRS_Beacon(ON);
+
+    When running in the Windows environment, specify the path to the Win32
+    SerialPort configuration file, as such:
+
+        my $configuration = "D:\\MyRadio\\COM6port.cfg";
+        my $radio = new THD7 ($configuration);
 
 ABSTRACT
     This module allows you to perform real-time control over the Kenwood

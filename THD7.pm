@@ -1,9 +1,6 @@
 package THD7;
 
-use Carp;
-
 require 5.004;
-require Win32::SerialPort;
 
 # David Nesting
 # THD7.pm - A module for providing control to a TH-D7 radio via serial port
@@ -27,7 +24,7 @@ BEGIN {
 	use Exporter ();
 	use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 	
-	$VERSION = 1.10;
+	$VERSION = 1.30;
 
 	@ISA = qw(Exporter);
 	@EXPORT = qw(NOCALLBACK);
@@ -213,6 +210,7 @@ sub new {
 		}
   } elsif ($os == $WINDOWS) {
     my $configuration = $serial;
+    require Win32::SerialPort;
     tie(*FH, 'Win32::SerialPort', $configuration) || croak("Can't tie: $^E");
     $self->{_fd} = *FH;
     $self->{_serial} = $configuration;
@@ -664,7 +662,6 @@ sub AutoOffset { &ARO(@_); }
 # APRS Position Limit
 #
 # Syntax: ARL n (units dependent upon UNIT setting)
-#
 # Alias: APRS_PosLimit
 #
 sub ARL {
@@ -704,7 +701,6 @@ sub Balance { &BAL(@_); }
 # Syntax:
 # BC [0|1]
 # BC [A|B]
-#
 # Alias: Band
 #
 # Returns: Band A/B [0|1]
@@ -740,7 +736,6 @@ sub APRS_Beacon { &BCN(@_); }
 # Syntax: 
 # BEL [0|1],[0|1]
 # BEL [A|B],[OFF|ON]
-#
 # Alias: Bell
 #
 # Turn bell on or off for band A or band B
@@ -767,7 +762,6 @@ sub Bell { &BEL(@_); }
 # Syntax:
 # BEP [0..3]
 # BEP [OFF|KEY|KEY_DATA|ALL]
-#
 # Alias: Beep
 #
 sub BEP {
@@ -802,7 +796,6 @@ sub BEPT {
 # Store VHO Frequency
 #
 # Syntax: BUF [A|B],freq_in_Hz,step,?,rev,tone,ctcss,?,tonefreq,?,ctcssfreq,ofs,mode
-#
 # Alias: Buffer, Set
 #
 # Sets the VFO frequency for band [A|B] to the parameters specified.
@@ -1355,8 +1348,8 @@ sub Position { &MP(@_); }
 # Read Memory Channel
 #
 # Syntax: MR 0?,0?,n Reads memory channel n
-# This appears to be the only way you can get an "MR" response, 
-# so callback seems unnecessary
+# This appears to be the only way you can get an "MR" response, so callback 
+# seems unnecessary
 # Alias: MemoryRead
 #
 sub MR {
@@ -1471,16 +1464,23 @@ sub POSC {
 sub APRS_Comment { &POSC(@_); }
 
 ##################
-# PP path APRS packet path
+# APRS Packet Path
+# Syntax: PP path 
 # Alias: APRS_Path
+#
 sub PP {
 	&Simple_Text("PP", @_);
 }
 sub APRS_Path { &PP(@_); }
 
 ##################
-# PT [0-6] DTMF transmit pause (100|200|500|750|1000|1500|2000ms)
+# DTMF Transmit Pause
+# 
+# Syntax: 
+# PT [0-6]
+# PT 100|200|500|750|1000|1500|2000 ms
 # Alias: DTMF_Pause
+#
 sub PT {
 	my $self = shift;
 	my $pause = shift;
@@ -1493,9 +1493,15 @@ sub PT {
 sub DTMF_Pause { &PT(@_); }
 	
 ##################
-# PV [1|2|3|6],f1,f2 Programmable VFO [AIR|VHF_A|VHF_B|UHF] low=f1 high=f2
-# f1 and f2 are frequencies in MHz.
+# Programmable VFO
+# 
+# Syntax: 
+# PV [1|2|3|6],f1,f2 
+# PV [AIR|VHF_A|VHF_B|UHF] low=f1 high=f2
 # Alias: ProgrammableVFO
+#
+# f1 and f2 are frequencies in MHz.
+#
 sub PV {
 	my $self = shift;
 	my $band = shift;
@@ -1520,9 +1526,13 @@ sub PV {
 sub ProgrammableVFO { &PV(@_); }
 
 ##################
-# REV Reverse mode [OFF|ON]
+# Reverse Mode
+#
+# Syntax: REV [OFF|ON]
 # Alias: Reverse
+#
 # Returns: Setting OFF/ON [0|1]
+#
 sub REV {
 	my $self = shift;
 	my $setting = shift;
@@ -1535,16 +1545,22 @@ sub REV {
 sub Reverse { &REV(@_); }
 
 ##################
-# RSV message SSTV RSV message
+# SSTV RSV Message
+#
+# Syntax: RSV message 
 # Alias: SSTV_RSV
+#
 sub RSV {
 	&Simple_Text("RSV", @_);
 }
 sub SSTV_RSVMessage { &RSV(@_); }
 
 ##################
-# RSC color[0..7] SSTV RSV message color
+# SSTV RSC Color
+#
+# Syntax: RSC color[0..7] 
 # Alias: SSTV_RSVColor
+#
 sub RSC {
 	my $self = shift;
 	my $color = shift;
@@ -1621,16 +1637,24 @@ sub SCR {
 sub ScanResume { &SCR(@_); }
 
 ##################
-# SCT call Sky Command Transporter call sign
+# Sky Command Transporter Call Sign
+#
+# Syntax: SCT call call sign
 # Alias: Sky_TransporterCall
+#
 sub SCT {
 	&Simple_Text("SCT", @_);
 }
 sub Sky_TransporterCall { &SCT(@_); }
 
 ##################
-# SFT [0|1|2] Repeater offset shift (OFF|NEGATIVE|POSITIVE)
+# Repeater Offset Shift
+#
+# Syntax: 
+# SFT [0|1|2]
+# SFT [OFF|NEGATIVE|POSITIVE]
 # Alias: Shift
+#
 sub SFT {
 	my $self = shift;
 	my $setting = shift;
@@ -1745,8 +1769,11 @@ sub SQ {
 sub Squelch { &SQ(@_); }
 
 ##################
-# ST n Set step size
+# Set Step Size
+#
+# Syntax: ST n 
 # Alias: Step
+#
 sub ST {
 	my $self = shift;
 	my $step = shift;
@@ -1760,16 +1787,22 @@ sub ST {
 sub Step { &ST(@_); }
 
 ##################
-# STAT text APRS status text
+# Set APRS Text
+#
+# Syntax: STAT text
 # Alias: APRS_Status
+#
 sub STAT {
 	&Simple_Text("STAT", @_);
 }
 sub APRS_Status { &STAT(@_); }
 
 ##################
-# APRS status tx
+# APRS Status Tx
+#
+# Syntax: STXR
 # Alias: APRS_StatusTx
+#
 sub STXR {
   my $self = shift;
   my $level = 1;
@@ -1782,9 +1815,11 @@ sub STXR {
 sub APRS_StatusTx { &STXR(@_); }
 
 ##################
-# STC call,n SSTV superimpose call sign
-# TODO: Figure out what n is!
+# SSTV Superimpose
+#
+# Syntax: STC call,n
 # Alias: SSTV_Superimpose
+#
 sub STC {
 	my $self = shift;
 	my $call = shift;
@@ -1796,9 +1831,12 @@ sub STC {
 }
 sub SSTV_Superimpose { &STC(@_); }
 
-# STS SSTV transmit mode (retrieve from connected VC?)
-# TODO: Figure out how this is used
+##################
+# SSTV Transmit Mode
+#
+# Syntax: STS transmit mode
 # Alias: SSTV_Mode
+#
 sub STS {
 	my $self = shift;
 	my $x1 = shift;
@@ -1810,8 +1848,13 @@ sub STS {
 sub SSTV_Mode { &STS(@_); }
 
 ##################
-# SV [0..9] Set battery saver mode (off|0.2|0.4|0.6|0.8|1.0|2|3|4|5)
+# Set Battery Saver
+#
+# Syntax: 
+# SV [0..9]
+# SV (off|0.2|0.4|0.6|0.8|1.0|2|3|4|5)
 # Alias: BatterySave
+#
 sub SV {
 	my $self = shift;
 	my $mode = shift;
@@ -1824,8 +1867,13 @@ sub SV {
 sub BatterySave { &SV(@_); }
 
 ##################
-# TC [0|1] Turn TNC Packet mode [OFF|ON] WRITE-ONLY
+# TNC Packet Mode
+#
+# Syntax: 
+# TC [0|1]
+# TC [OFF|ON] WRITE-ONLY
 # Alias: Packet
+#
 # Note: Entering packet mode via the D7 keypad will NOT activate a
 # callback via this method.
 # Note: While in Packet mode, NO OTHER COMMANDS WILL BE AVAILABLE
@@ -1838,6 +1886,7 @@ sub BatterySave { &SV(@_); }
 # in packet mode, BUT, this callback uses the command "TS" for some
 # strange reason.  I think we'll change it to TC in the callback
 # code.
+#
 sub TC {
 	my $self = shift;
 	my $onoff = shift;
@@ -1850,10 +1899,16 @@ sub TC {
 sub Packet { &TC(@_); }
 
 ##################
-# TNC [0|1] Turn TNC APRS mode [OFF|ON]
+# Toggle APRS Mode
+#
+# Syntax: 
+# TNC [0|1]
+# TNC [OFF|ON]
+#
 # A notification will not be sent via this callback in the event the D7
 # enters Packet mode.
 # Alias: APRS
+#
 sub TNC {
 	my $self = shift;
 	my $setting = shift;
@@ -1866,16 +1921,22 @@ sub TNC {
 sub APRS { &TNC(@_); }
 
 ##################
-# TO [0|1] PL Tone enable
+# PL Tone Enable
+#
+# Syntax: TO [0|1]
 # Alias: Tone
+#
 sub TO {
 	&Simple_OnOff("TO", @_);
 }
 sub Tone { &TO(@_); }
 
 ##################
-# TN n PL tone frequency
+# PL Tone Frequency
+#
+# Syntax: TN n
 # Alias: ToneFreq
+#
 sub TN {
 	my $self = shift;
 	my $tone = shift;
@@ -1888,8 +1949,13 @@ sub TN {
 sub ToneFreq { &TN(@_); }
 
 ##################
-# TSP [0|1] DTMF transmission speed [SLOW|FAST]
+# DTMF Transmission Speed
+#
+# Syntax: 
+# TSP [0|1]
+# TSP [SLOW|FAST]
 # Alias: DTMF_Speed
+#
 sub TSP {
 	my $self = shift;
 	my $setting = shift;
@@ -1903,10 +1969,16 @@ sub TSP {
 sub DTMF_Speed { &TSP(@_); }
 
 ##################
-# TX [0|1] Begin transmitting on band [A|B]
+# Transmit
+# 
+# Syntax: 
+# TX [0|1]
+# TX [A|B]
+# Alias: Transmit
+#
 # WARNING: THIS WILL CAUSE THE D7 TO TRANSMIT UNTIL AN RX COMMAND IS RECEIVED
 # UNLESS THE D7'S TX INHIBIT IS ENABLED.
-# Alias: Transmit
+#
 sub TX {
 	my $self = shift;
 	my $band = shift;
@@ -1919,8 +1991,13 @@ sub TX {
 sub Transmit { &TX(@_); }
 
 ##################
-# TXH [0|1] DTMF Transmit Hold [OFF|ON]
+# DTMF Transmit Hold
+#
+# Syntax: 
+# TXH [0|1] 
+# TXH [OFF|ON]
 # Alias: DTMF_TransmitHold
+#
 sub TXH {
 	my $self = shift;
 	my $setting = shift;
@@ -1933,8 +2010,11 @@ sub TXH {
 sub DTMF_TransmitHold { &TXH(@_) }
 
 ##################
-# TXI [0..7] APRS transmit interval
+# APRS Transmit Interval
+#
+# Syntax: TXI [0..7] 
 # Alias: APRS_TransmitInterval
+#
 sub TXI {
 	my $self = shift;
 	my $setting = shift;
@@ -1947,16 +2027,24 @@ sub TXI {
 sub APRS_TransmitInterval { &TXI(@_); }
 
 ##################
-# TXS [0|1] TX Inhibit
+# TX Inhibit
+#
+# Syntax: TXS [0|1]
 # Alias: TransmitInhibit
+#
 sub TXS {
 	&Simple_OnOff("TXS", @_);
 }
 sub TransmitInhibit { &TXS(@_); }
 
 ##################
-# UNIT [0|1] Measurment units [ENGLISH|METRIC]
+# Measurement Units
+#
+# Syntax: 
+# UNIT [0|1]
+# UNIT [ENGLISH|METRIC]
 # Alias: Unit
+#
 sub UNIT {
 	my $self = shift;
 	my $setting = shift;
@@ -1970,8 +2058,11 @@ sub UNIT {
 sub Unit { &UNIT(@_); }
 
 ##################
-# UP Adjust the frequency upward one
+# Adjust the Frequency
+#
+# Syntax: UP
 # Alias: Up
+#
 sub UP {
 	my $self = shift;
 	my $blah = shift;
@@ -1984,24 +2075,37 @@ sub UP {
 sub Up { &UP(@_); }
 
 ##################
-# UPR string APRS Unprotocol string
+# APRS Unprotocol String
+#
+# Syntax: UPR unprotocol string
 # Alias: APRS_Unprotocol
+#
 sub UPR {
 	&Simple_Text("UPR", @_);
 }
 sub APRS_Unprotocol { &UPR(@_); }
 
 ##################
-# VCS [0|1] VCS shutter [OFF|ON]
+# VCS Shutter
+#
+# Syntax: 
+# VCS [0|1]
+# VCS [OFF|ON]
 # Alias: SSTV_Shutter
+#
 sub VCS {
 	&Simple_OnOff("VCS", @_);
 }
 sub SSTV_Shutter { &VCS(@_); }
 
 ##################
-# VMC [0|1],[0|2|3] Band mode for [A|B]: [VFO|Memory|Call]
+# VMC Band Mode
+#
+# Syntax: 
+# VMC [0|1],[0|2|3]
+# VMC [A|B], [VFO|Memory|Call]
 # Alias: Mode
+#
 sub VMC {
 	my $self = shift;
 	my $mode = shift;
@@ -2015,8 +2119,13 @@ sub VMC {
 sub Mode { &VMC(@_); }
 
 ##################
-# VR vfo Reads the currently set frequency for VFO band vfo.
+# Read VFO Frequency
+#
+# Syntax: VR vfo 
 # Alias: VFORead
+#
+# Reads the currently set frequency for VFO band vfo.
+#
 sub VR {
 	my $self = shift;
 	my $vfo = shift;
@@ -2028,9 +2137,13 @@ sub VR {
 }
 
 ##################
-# VW vfo,freq_in_Hz,step,?,rev,tone,ctcss,?,tonefreq,?,ctcssfreq,ofs,mode
-# Sets the VFO frequency for the specified VFO to the parameters specified.
+# Write VFO Frequency
+#
+# Syntax: VW vfo,freq_in_Hz,step,?,rev,tone,ctcss,?,tonefreq,?,ctcssfreq,ofs,mode
 # Alias: VFOWrite
+#
+# Sets the VFO frequency for the specified VFO to the parameters specified.
+#
 sub VW {
 	my $self = shift;
 	my ($vfo, $freq, $step, $x1, $reverse, $tone, $ctcss, $x2,
@@ -2090,12 +2203,20 @@ THD7 - Perl module providing control to a Kenwood TH-D7 radio via serial port
 
     use THD7 qw(:constants :functions);
 
-    $Radio = new THD7 ("/dev/ttyS0");
+    my $Radio = new THD7 ("/dev/ttyS0");
     $Radio->Band(BAND_A);
     $Radio->DataBand(BAND_A);
     $Radio->TNC(ON);
     $Radio->APRS_TransmitInterval(1);
     $Radio->APRS_Beacon(ON);
+
+
+When running in the Windows environment, specify the path to the Win32
+SerialPort configuration file, as such:
+
+    my $configuration = "D:\\MyRadio\\COM6port.cfg";
+    my $radio = new THD7 ($configuration);
+
 
 =head1 ABSTRACT
 
